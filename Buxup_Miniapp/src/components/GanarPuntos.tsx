@@ -14,10 +14,11 @@ interface AdsgramAPI {
   init: (params: { blockId: string }) => AdsgramController;
 }
 
+// SOLUCIÓN PRO: Le decimos a TypeScript que Monetag inyectará una función exacta con tu ID
 declare global {
   interface Window {
     Adsgram?: AdsgramAPI;
-    // Ya no necesitamos las variables de Monetag/Adsterra aquí porque usamos Enlaces Directos
+    show_11114297?: () => Promise<void>; 
   }
 }
 
@@ -58,7 +59,7 @@ export default function GanarPuntos({ balance, setBalance, telegramId }: GanarPu
     setIsWatchingAd(true);
 
     // ==========================================
-    // CASCADA DE ANUNCIOS: 3 NIVELES
+    // CASCADA DE ANUNCIOS (ADSGRAM -> MONETAG NATIVO -> ADSTERRA)
     // ==========================================
     const proveedoresDeAnuncios = [
       {
@@ -66,7 +67,6 @@ export default function GanarPuntos({ balance, setBalance, telegramId }: GanarPu
         recompensa: 5,
         reproducir: async () => {
           if (!window.Adsgram) throw new Error("API de Adsgram no inyectada.");
-          // Tu ID de Adsgram real (Cuando esté verificado en unas horas, funcionará solo)
           const AdController = window.Adsgram.init({ blockId: "32495" }); 
           await AdController.show();
         }
@@ -75,20 +75,25 @@ export default function GanarPuntos({ balance, setBalance, telegramId }: GanarPu
         nombre: 'Monetag',
         recompensa: 3,
         reproducir: async () => {
-          // Tu enlace directo real de Monetag
-          const monetagUrl = "https://me.monetag.com/direct_link?zoneid=3362482";
-          window.open(monetagUrl, '_blank');
-          // Esperamos 3 segundos simulando que carga el anuncio antes de dar los puntos (Seguridad TS: Promise<void>)
-          await new Promise<void>(resolve => setTimeout(resolve, 3000));
+          // MÉTODO NATIVO: Verificamos si el script inyectó la función con tu ID
+          if (typeof window.show_11114297 !== 'function') {
+            throw new Error("El script de Monetag aún no ha cargado o fue bloqueado.");
+          }
+          // Ejecutamos el anuncio nativo. Pausará el código hasta que termine.
+          await window.show_11114297(); 
         }
       },
       {
         nombre: 'Adsterra',
         recompensa: 2,
         reproducir: async () => {
-          // Tu enlace inteligente (Smart Link) real de Adsterra
+          // Adsterra se mantiene con Smart Link directo
           const adsterraUrl = "https://www.effectivecpmnetwork.com/ch9fys2z7h?key=ab88dc5ae9c0abf1e17ea4939b04dde0";
-          window.open(adsterraUrl, '_blank');
+          const popup = window.open(adsterraUrl, '_blank');
+          
+          if (!popup) {
+            throw new Error("Navegador bloqueó Adsterra.");
+          }
           await new Promise<void>(resolve => setTimeout(resolve, 3000));
         }
       }
@@ -104,15 +109,15 @@ export default function GanarPuntos({ balance, setBalance, telegramId }: GanarPu
         
         proveedorExitoso = proveedor.nombre;
         recompensaFinal = proveedor.recompensa;
-        break; // Si tiene éxito, rompemos la cascada para no abrir más anuncios
+        break; 
         
       } catch { 
-        console.log(`[Waterfall] ${proveedor.nombre} falló. Saltando al siguiente...`);
+        console.log(`[Waterfall] ${proveedor.nombre} falló o fue bloqueado. Saltando al siguiente...`);
       }
     }
 
     if (!proveedorExitoso || recompensaFinal === null) {
-      alert("No hay anuncios disponibles en este momento.");
+      alert("No hay anuncios disponibles en este momento. Intenta de nuevo en unos segundos.");
       setIsWatchingAd(false);
       return; 
     }
@@ -151,7 +156,6 @@ export default function GanarPuntos({ balance, setBalance, telegramId }: GanarPu
         <h2 style={{ margin: '5px 0', fontSize: '2.5rem', color: '#00c6ff' }}>{balance.toLocaleString()}</h2>
       </div>
 
-      {/* --- SECCIÓN 1: VIDEOS (CASCADA) --- */}
       <div className="t2e-progress-wrapper" style={{ marginBottom: '20px' }}>
         <h3 style={{ marginTop: 0, marginBottom: '5px', fontSize: '1.1rem' }}>Ver Videos Cortos</h3>
         <p style={{ fontSize: '0.85rem', color: '#8a8d9e', marginBottom: '15px' }}>Gana puntos rápidos viendo anuncios publicitarios.</p>
@@ -193,7 +197,6 @@ export default function GanarPuntos({ balance, setBalance, telegramId }: GanarPu
         </button>
       </div>
 
-      {/* --- SECCIÓN 2: MUROS DE OFERTAS GLOBALES --- */}
       <div className="t2e-progress-wrapper">
         <h3 style={{ marginTop: 0, marginBottom: '5px', fontSize: '1.1rem' }}>🚀 Tareas Premium</h3>
         <p style={{ fontSize: '0.85rem', color: '#8a8d9e', marginBottom: '15px' }}>Miles de puntos por jugar y hacer encuestas.</p>
