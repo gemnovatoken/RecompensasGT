@@ -390,180 +390,239 @@ button:active {
 
 
 /* =========================================
-   DISEÑO INSTITUCIONAL PRO PARA INICIO
+   DISEÑO "TAP TO EARN" (TELEGRAM MINI APP)
    ========================================= */
 
-.inicio-container {
+.t2e-container {
   display: flex;
   flex-direction: column;
-  gap: 25px;
-  padding: 10px 5px;
+  padding: 15px;
+  min-height: 80vh;
+  background: radial-gradient(circle at top, #1a1b26 0%, #0d0d12 100%);
+  color: #ffffff;
+  border-radius: 20px;
 }
 
 /* Encabezado */
-.header-section {
+.t2e-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 30px;
 }
 
-.header-greeting h2 {
-  margin: 0;
-  font-size: 1.4rem;
-  color: var(--texto-principal);
-  font-weight: 800;
+.t2e-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 5px 15px 5px 5px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.header-greeting p {
-  margin: 5px 0 0 0;
-  font-size: 0.95rem;
-  color: var(--texto-secundario);
-}
-
-.header-avatar {
-  font-size: 1.8rem;
-  background-color: #f0f2f5;
+.t2e-avatar {
+  background: #2a2b38;
+  width: 35px;
+  height: 35px;
   border-radius: 50%;
-  width: 50px;
-  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  font-size: 1.2rem;
 }
 
-/* Tarjeta de Balance PRO */
-.balance-card-pro {
-  background: linear-gradient(135deg, #0052cc 0%, #003380 100%);
+.t2e-username {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.t2e-level-badge {
+  background: linear-gradient(90deg, #ff9900, #ff5500);
+  padding: 8px 15px;
   border-radius: 20px;
-  padding: 25px;
-  color: white;
-  box-shadow: 0 12px 25px rgba(0, 82, 204, 0.3);
+  font-weight: bold;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 15px rgba(255, 85, 0, 0.3);
 }
 
-.balance-header {
+/* Zona Central: Moneda y Balance */
+.t2e-balance-section {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  font-size: 0.95rem;
-  opacity: 0.9;
+  margin-bottom: 40px;
 }
 
-.currency-badge {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 0.8rem;
+.t2e-coin-glow {
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 70%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 15px;
+  border-radius: 50%;
+  animation: pulseGlow 2s infinite alternate;
+}
+
+@keyframes pulseGlow {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(1.1); opacity: 1; }
+}
+
+.t2e-main-coin {
+  font-size: 5rem;
+  filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
+}
+
+.t2e-balance-amount {
+  font-size: 3.5rem;
+  font-weight: 900;
+  margin: 0;
+  letter-spacing: -1px;
+  background: linear-gradient(to bottom, #ffffff, #a0a5ba);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.t2e-balance-label {
+  font-size: 0.85rem;
+  color: #8a8d9e;
+  letter-spacing: 2px;
+  margin-top: 5px;
   font-weight: bold;
 }
 
-.balance-amount {
-  margin: 15px 0;
-  font-size: 3rem;
-  font-weight: 800;
-  letter-spacing: -1px;
-}
-
-.balance-amount span {
-  font-size: 1.2rem;
-  font-weight: normal;
-  opacity: 0.8;
-}
-
-/* Sección de Progreso dentro de la Tarjeta */
-.progress-section {
-  margin-top: 25px;
-  background: rgba(0, 0, 0, 0.15);
+/* Barra de Progreso */
+.t2e-progress-wrapper {
+  background: rgba(255, 255, 255, 0.03);
   padding: 15px;
-  border-radius: 15px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 30px;
 }
 
-.progress-info {
+.t2e-progress-info {
   display: flex;
   justify-content: space-between;
   font-size: 0.85rem;
+  color: #a0a5ba;
   margin-bottom: 10px;
   font-weight: 500;
 }
 
-.progress-container-pro {
-  height: 8px;
-  background: rgba(255, 255, 255, 0.15);
+.t2e-progress-numbers {
+  color: #ffffff;
+  font-weight: bold;
+}
+
+.t2e-progress-track {
+  width: 100%;
+  height: 12px;
+  background: #1a1b26;
   border-radius: 10px;
   overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
 }
 
-.progress-bar-pro {
+.t2e-progress-fill {
   height: 100%;
-  background: #00d2ff; /* Azul celeste brillante para destacar */
+  background: linear-gradient(90deg, #00c6ff, #0072ff);
   border-radius: 10px;
-  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 10px rgba(0, 198, 255, 0.5);
+  transition: width 0.5s ease;
 }
 
-.level-text-pro {
-  margin: 12px 0 0 0;
-  font-size: 0.85rem;
-  text-align: center;
-  opacity: 0.9;
-}
-
-/* Tarjetas de Acciones Rápidas (Botones) */
-.quick-actions-grid {
+/* Botones de Acción / Tareas */
+.t2e-actions-grid {
   display: flex;
-  flex-direction: column;
   gap: 15px;
 }
 
-.action-card {
-  display: flex;
-  align-items: center;
-  background: white;
-  padding: 15px 20px;
-  border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border: 1px solid #f0f2f5;
-}
-
-.action-card:active {
-  transform: scale(0.97); /* Efecto de hundimiento nivel PRO */
-}
-
-.action-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  margin-right: 15px;
-}
-
-.bg-orange { background: #fff0e6; }
-.bg-blue { background: #e6f0ff; }
-
-.action-content {
+.t2e-action-btn {
   flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: white;
   text-align: left;
 }
 
-.action-content h3 {
-  margin: 0 0 4px 0;
-  font-size: 1.1rem;
-  color: var(--texto-principal);
-  font-weight: 700;
+.t2e-action-btn:active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.1);
 }
 
-.action-content p {
+.t2e-btn-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+  margin-right: 12px;
+}
+
+.fire-icon { background: rgba(255, 85, 0, 0.2); }
+.gift-icon { background: rgba(0, 198, 255, 0.2); }
+
+.t2e-btn-text h3 {
+  margin: 0 0 5px 0;
+  font-size: 1rem;
+}
+
+.t2e-btn-text p {
   margin: 0;
-  font-size: 0.85rem;
-  color: var(--texto-secundario);
+  font-size: 0.75rem;
+  color: #8a8d9e;
 }
 
-.action-arrow {
-  color: #ccc;
-  font-size: 1.2rem;
+
+/* =========================================
+   EL POP-UP (MODAL) QUE OSCURECE LA PANTALLA
+   ========================================= */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8); /* Fondo oscuro transparente */
+  backdrop-filter: blur(5px); /* Efecto cristal nivel PRO */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* Asegura que esté por encima de todo */
+}
+
+.modal-content {
+  background: #1a1b26;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 24px;
+  padding: 25px;
+  width: 90%;
+  max-width: 350px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  color: white;
+  position: relative;
+  text-align: center;
+}
+
+.btn-close {
+  margin-top: 15px;
+  background: rgba(255,255,255,0.1);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  width: 100%;
+  cursor: pointer;
   font-weight: bold;
 }

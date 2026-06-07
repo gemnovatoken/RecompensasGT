@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Racha from './Modales/Racha'; // Importamos la nueva ventana emergente
+import Racha from './Modales/Racha';
 
 interface InicioProps {
   balance: number;
@@ -8,83 +8,74 @@ interface InicioProps {
 }
 
 export default function Inicio({ balance, setBalance, telegramId }: InicioProps) {
-  // Estado para controlar si la ventana emergente está abierta o cerrada
   const [isCheckinModalOpen, setIsCheckinModalOpen] = useState(false);
 
   const nextLevel = 10000;
   const progressPercentage = Math.min((balance / nextLevel) * 100, 100);
 
   return (
-    <div className="inicio-container">
+    <div className="t2e-container">
       
-      {/* 1. ENCABEZADO AMIGABLE */}
-      <div className="header-section">
-        <div className="header-greeting">
-          <h2>¡Hola, Chapín! 👋</h2>
-          <p>Centro de Recompensas GT</p>
+      {/* 1. ENCABEZADO GAMIFICADO */}
+      <div className="t2e-header">
+        <div className="t2e-user">
+          <div className="t2e-avatar">👤</div>
+          <span className="t2e-username">Chapín</span>
         </div>
-        <div className="header-avatar">
-          👤
-        </div>
-      </div>
-
-      {/* 2. TARJETA DE BALANCE (Diseño Institucional / Bancario) */}
-      <div className="balance-card-pro">
-        <div className="balance-header">
-          <p>Saldo Disponible</p>
-          <span className="currency-badge">GTQ</span>
-        </div>
-        
-        <h1 className="balance-amount">{balance.toLocaleString()} <span>pts</span></h1>
-        
-        <div className="progress-section">
-          <div className="progress-info">
-            <span>Progreso Actual</span>
-            <span>Nivel 1 ({nextLevel.toLocaleString()} pts)</span>
-          </div>
-          
-          <div className="progress-container-pro">
-            <div 
-              className="progress-bar-pro" 
-              style={{ width: `${progressPercentage}%` }}
-            ></div>
-          </div>
-          
-          <p className="level-text-pro">
-            Faltan {(nextLevel - balance).toLocaleString()} pts para tu primer canje 🎁
-          </p>
+        <div className="t2e-level-badge">
+          ⭐ Nivel 1
         </div>
       </div>
 
-      {/* 3. MENÚ DE ACCIONES RÁPIDAS (Tarjetas Modernas) */}
-      <div className="quick-actions-grid">
-        
-        {/* Tarjeta de Racha / Check-in */}
-        <div 
-          className="action-card" 
+      {/* 2. ZONA CENTRAL: EL BALANCE (Estilo Tap to Earn) */}
+      <div className="t2e-balance-section">
+        <div className="t2e-coin-glow">
+          {/* Puedes cambiar este emoji por el logo de tu moneda luego */}
+          <div className="t2e-main-coin">🪙</div> 
+        </div>
+        <h1 className="t2e-balance-amount">{balance.toLocaleString()}</h1>
+        <p className="t2e-balance-label">PUNTOS TOTALES</p>
+      </div>
+
+      {/* 3. BARRA DE PROGRESO GAMIFICADA */}
+      <div className="t2e-progress-wrapper">
+        <div className="t2e-progress-info">
+          <span>Camino al Canje</span>
+          <span className="t2e-progress-numbers">{balance.toLocaleString()} / {nextLevel.toLocaleString()}</span>
+        </div>
+        <div className="t2e-progress-track">
+          <div 
+            className="t2e-progress-fill" 
+            style={{ width: `${progressPercentage}%` }}
+          ></div>
+        </div>
+      </div>
+
+      {/* 4. BOTONES DE ACCIÓN (Tarjetas modernas) */}
+      <div className="t2e-actions-grid">
+        {/* BOTÓN QUE ABRE EL POP-UP DE RACHA */}
+        <button 
+          className="t2e-action-btn" 
           onClick={() => setIsCheckinModalOpen(true)}
         >
-          <div className="action-icon bg-orange">🔥</div>
-          <div className="action-content">
+          <div className="t2e-btn-icon fire-icon">🔥</div>
+          <div className="t2e-btn-text">
             <h3>Racha Diaria</h3>
-            <p>Gana hasta 35 pts hoy</p>
+            <p>Reclamar Bono</p>
           </div>
-          <div className="action-arrow">➔</div>
-        </div>
+        </button>
 
-        {/* Tarjeta de Catálogo de Premios */}
-        <div className="action-card">
-          <div className="action-icon bg-blue">🎁</div>
-          <div className="action-content">
-            <h3>Catálogo de Premios</h3>
-            <p>Ver recompensas disponibles</p>
+        {/* BOTÓN DE PREMIOS */}
+        <button className="t2e-action-btn">
+          <div className="t2e-btn-icon gift-icon">🎁</div>
+          <div className="t2e-btn-text">
+            <h3>Premios</h3>
+            <p>Ver Catálogo</p>
           </div>
-          <div className="action-arrow">➔</div>
-        </div>
-
+        </button>
       </div>
 
-      {/* AQUÍ INYECTAMOS EL MODAL (La lógica se mantiene intacta) */}
+      {/* AQUÍ ESTÁ EL POP-UP (Se abrirá sobre toda la pantalla) */}
       <Racha 
         isOpen={isCheckinModalOpen} 
         onClose={() => setIsCheckinModalOpen(false)} 
