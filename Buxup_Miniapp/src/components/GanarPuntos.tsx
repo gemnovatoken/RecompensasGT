@@ -67,7 +67,7 @@ export default function GanarPuntos({ balance, setBalance, telegramId }: GanarPu
         recompensa: 5,
         reproducir: async () => {
           if (!window.Adsgram) throw new Error("API de Adsgram no inyectada.");
-          const AdController = window.Adsgram.init({ blockId: "32495" }); 
+          const AdController = window.Adsgram.init({ blockId: "34424" }); 
           await AdController.show();
         }
       },
