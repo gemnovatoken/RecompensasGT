@@ -7,22 +7,18 @@ interface GanarPuntosProps {
   telegramId: number | null;
 }
 
-// SOLUCIÓN PRO: Le decimos a TypeScript que 'Adsgram' existe en la ventana global del navegador
-// para que no nos lance el error de "Unexpected any" o "Property does not exist".
-// 1. Definimos qué hace el controlador del anuncio (mostrar el video)
 interface AdsgramController {
   show: () => Promise<void>;
 }
-
-// 2. Definimos qué necesita la herramienta principal para inicializarse
 interface AdsgramAPI {
   init: (params: { blockId: string }) => AdsgramController;
 }
 
-// 3. Lo inyectamos de forma estricta y segura en la ventana global (¡Adiós al 'any'!)
 declare global {
   interface Window {
     Adsgram?: AdsgramAPI;
+    showMonetagAd?: () => Promise<void>; 
+    showAdsterraAd?: () => Promise<void>;
   }
 }
 
@@ -33,11 +29,9 @@ export default function GanarPuntos({ balance, setBalance, telegramId }: GanarPu
   const LIMITE_DIARIO = 75; 
   const progresoAds = Math.min((adsVistosHoy / LIMITE_DIARIO) * 100, 100);
 
-  // Consulta inicial a Supabase para saber cuántos videos ha visto HOY
   useEffect(() => {
     const contarAnunciosHoy = async () => {
       if (!telegramId) return;
-      
       const { data: usuario } = await supabase.from('usuarios').select('id').eq('telegram_id', telegramId).single();
       
       if (usuario) {
@@ -55,57 +49,81 @@ export default function GanarPuntos({ balance, setBalance, telegramId }: GanarPu
     contarAnunciosHoy();
   }, [telegramId]);
 
-  // --- INTEGRACIÓN REAL DE ADSGRAM ---
   const handleWatchAd = async () => {
     if (!telegramId) return;
     if (adsVistosHoy >= LIMITE_DIARIO) {
-      alert("¡Llegaste al límite diario! Vuelve mañana para seguir ganando.");
+      alert(`¡Llegaste al límite diario de ${LIMITE_DIARIO} anuncios! Vuelve mañana.`);
       return;
     }
 
     setIsWatchingAd(true);
 
-    try {
-      // 1. Verificamos que el script de index.html haya cargado correctamente
-      if (!window.Adsgram) {
-        throw new Error("El proveedor de anuncios no está disponible en este momento.");
+    const proveedoresDeAnuncios = [
+      {
+        nombre: 'Adsgram',
+        recompensa: 5,
+        reproducir: async () => {
+          if (!window.Adsgram) throw new Error("API de Adsgram no inyectada.");
+          const AdController = window.Adsgram.init({ blockId: "TU_BLOCK_ID_AQUI" }); 
+          await AdController.show();
+        }
+      },
+      {
+        nombre: 'Monetag',
+        recompensa: 3,
+        reproducir: async () => {
+          if (!window.showMonetagAd) throw new Error("API de Monetag no inyectada.");
+          await window.showMonetagAd(); 
+        }
+      },
+      {
+        nombre: 'Adsterra',
+        recompensa: 2,
+        reproducir: async () => {
+          if (!window.showAdsterraAd) throw new Error("API de Adsterra no inyectada.");
+          await window.showAdsterraAd();
+        }
       }
+    ];
 
-      // 2. Inicializamos el controlador (⚠️ AQUÍ DEBES PONER TU BLOCK ID REAL ⚠️)
-      // Ejemplo: "2834" o el número que te dé Adsgram en su panel.
-      const AdController = window.Adsgram.init({ blockId: "34362" }); 
+    let proveedorExitoso: string | null = null;
+    let recompensaFinal: number | null = null;
 
-      console.log("[Waterfall] Solicitando anuncio real a Adsgram...");
-      
-      // 3. Ejecutamos el anuncio. Esto pausará el código hasta que el usuario termine de verlo.
-      await AdController.show();
+    for (const proveedor of proveedoresDeAnuncios) {
+      try {
+        console.log(`[Waterfall] Intentando conectar con ${proveedor.nombre}...`);
+        await proveedor.reproducir();
+        proveedorExitoso = proveedor.nombre;
+        recompensaFinal = proveedor.recompensa;
+        break; 
+        
+      // SOLUCIÓN PRO: Quitamos los paréntesis y la variable. Solo usamos 'catch {'
+      } catch { 
+        console.log(`[Waterfall] ${proveedor.nombre} falló. Saltando al siguiente...`);
+      }
+    }
 
-      // 4. SI LLEGAMOS AQUÍ: Significa que el anuncio se vio completo. ¡Guardamos en Supabase!
-      const proveedor = 'Adsgram';
-      const recompensa = 5;
+    if (!proveedorExitoso || recompensaFinal === null) {
+      alert("No hay anuncios disponibles en este momento.");
+      setIsWatchingAd(false);
+      return; 
+    }
 
+    try {
       const { data: nuevoBalance, error } = await supabase.rpc('registrar_vista_anuncio', {
         p_telegram_id: telegramId,
         p_limite_diario: LIMITE_DIARIO,
-        p_proveedor: proveedor,
-        p_recompensa: recompensa
+        p_proveedor: proveedorExitoso,
+        p_recompensa: recompensaFinal
       });
 
-      if (error) {
-        alert(`❌ Error del servidor: ${error.message}`);
-      } else {
-        setBalance(nuevoBalance);
-        setAdsVistosHoy(prev => prev + 1);
-        alert(`✅ ¡Ganaste ${recompensa} pts vía ${proveedor}!`);
-      }
-
+      if (error) throw error;
+      setBalance(nuevoBalance);
+      setAdsVistosHoy(prev => prev + 1);
+      alert(`✅ ¡Ganaste ${recompensaFinal} pts vía ${proveedorExitoso}!`);
     } catch (err: unknown) {
-      // Si el usuario cierra el anuncio antes de tiempo, o si Adsgram dice "No hay inventario", cae aquí.
-      console.log("[Waterfall] Adsgram falló o se canceló:", err);
-      
-      // ⚠️ PRÓXIMO PASO: Aquí es exactamente donde inyectaremos a Monetag para salvar el anuncio.
-      alert("No hay anuncios disponibles en Adsgram en este momento o cancelaste el video. (¡Aquí entrará Monetag muy pronto!)");
-      
+      if (err instanceof Error) console.error("Error BD:", err.message);
+      alert("Error al guardar puntos.");
     } finally {
       setIsWatchingAd(false);
     }
@@ -128,7 +146,6 @@ export default function GanarPuntos({ balance, setBalance, telegramId }: GanarPu
         <h3 style={{ marginTop: 0, marginBottom: '5px', fontSize: '1.1rem' }}>Ver Videos Cortos</h3>
         <p style={{ fontSize: '0.85rem', color: '#8a8d9e', marginBottom: '15px' }}>Gana puntos rápidos viendo anuncios publicitarios.</p>
         
-        {/* Tracker del Límite Diario */}
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '8px' }}>
           <span>Límite Diario:</span>
           <span style={{ fontWeight: 'bold', color: adsVistosHoy >= LIMITE_DIARIO ? '#ff5500' : 'white' }}>
@@ -159,8 +176,8 @@ export default function GanarPuntos({ balance, setBalance, telegramId }: GanarPu
         >
           <div className="t2e-btn-text" style={{ textAlign: 'center' }}>
             <h3 style={{ fontSize: '1.2rem', margin: 0 }}>
-              {isWatchingAd ? '⏳ Cargando anuncio...' : 
-               adsVistosHoy >= LIMITE_DIARIO ? '🚫 Límite por hoy' : '▶ Ver Anuncio (+5 pts)'}
+              {isWatchingAd ? '⏳ Buscando anuncio...' : 
+               adsVistosHoy >= LIMITE_DIARIO ? '🚫 Límite por hoy' : '▶ Ver Anuncio'}
             </h3>
           </div>
         </button>
