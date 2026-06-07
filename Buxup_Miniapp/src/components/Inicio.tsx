@@ -16,38 +16,75 @@ export default function Inicio({ balance, setBalance, telegramId }: InicioProps)
 
   return (
     <div className="inicio-container">
-      <h2>Centro de Recompensas GT</h2>
-
-      <div className="balance-card">
-        <p>Saldo Actual</p>
-        <h1>{balance.toLocaleString()} pts</h1>
-        
-        <div className="progress-container">
-          <div 
-            className="progress-bar" 
-            style={{ width: `${progressPercentage}%` }}
-          ></div>
+      
+      {/* 1. ENCABEZADO AMIGABLE */}
+      <div className="header-section">
+        <div className="header-greeting">
+          <h2>¡Hola, Chapín! 👋</h2>
+          <p>Centro de Recompensas GT</p>
         </div>
-        <p className="level-text">Faltan {(nextLevel - balance).toLocaleString()} pts para el Nivel 1</p>
+        <div className="header-avatar">
+          👤
+        </div>
       </div>
 
-      <div className="earn-section checkin-card">
-        <h3>📅 Recompensas Diarias</h3>
-        <p>Abre tu ventana de check-in, revisa tu racha actual y completa el combo del día para ganar más.</p>
+      {/* 2. TARJETA DE BALANCE (Diseño Institucional / Bancario) */}
+      <div className="balance-card-pro">
+        <div className="balance-header">
+          <p>Saldo Disponible</p>
+          <span className="currency-badge">GTQ</span>
+        </div>
         
-        <button 
-          className="btn-primary" 
-          onClick={() => setIsCheckinModalOpen(true)} // Esto abre el modal
-        >
-          🔥 Abrir Check-in y Tareas
-        </button>
+        <h1 className="balance-amount">{balance.toLocaleString()} <span>pts</span></h1>
+        
+        <div className="progress-section">
+          <div className="progress-info">
+            <span>Progreso Actual</span>
+            <span>Nivel 1 ({nextLevel.toLocaleString()} pts)</span>
+          </div>
+          
+          <div className="progress-container-pro">
+            <div 
+              className="progress-bar-pro" 
+              style={{ width: `${progressPercentage}%` }}
+            ></div>
+          </div>
+          
+          <p className="level-text-pro">
+            Faltan {(nextLevel - balance).toLocaleString()} pts para tu primer canje 🎁
+          </p>
+        </div>
       </div>
 
-      <button className="btn-secondary" style={{ width: '100%', marginTop: '10px' }}>
-        🏆 Ver Catálogo de Premios
-      </button>
+      {/* 3. MENÚ DE ACCIONES RÁPIDAS (Tarjetas Modernas) */}
+      <div className="quick-actions-grid">
+        
+        {/* Tarjeta de Racha / Check-in */}
+        <div 
+          className="action-card" 
+          onClick={() => setIsCheckinModalOpen(true)}
+        >
+          <div className="action-icon bg-orange">🔥</div>
+          <div className="action-content">
+            <h3>Racha Diaria</h3>
+            <p>Gana hasta 35 pts hoy</p>
+          </div>
+          <div className="action-arrow">➔</div>
+        </div>
 
-      {/* AQUÍ INYECTAMOS EL MODAL (Solo se mostrará si isCheckinModalOpen es true) */}
+        {/* Tarjeta de Catálogo de Premios */}
+        <div className="action-card">
+          <div className="action-icon bg-blue">🎁</div>
+          <div className="action-content">
+            <h3>Catálogo de Premios</h3>
+            <p>Ver recompensas disponibles</p>
+          </div>
+          <div className="action-arrow">➔</div>
+        </div>
+
+      </div>
+
+      {/* AQUÍ INYECTAMOS EL MODAL (La lógica se mantiene intacta) */}
       <Racha 
         isOpen={isCheckinModalOpen} 
         onClose={() => setIsCheckinModalOpen(false)} 

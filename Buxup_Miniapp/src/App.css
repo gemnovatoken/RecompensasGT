@@ -386,3 +386,184 @@ button:active {
   transform: scale(1.02); /* Se hace un poquito más grande para destacar */
   box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
 }
+
+
+
+/* =========================================
+   DISEÑO INSTITUCIONAL PRO PARA INICIO
+   ========================================= */
+
+.inicio-container {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  padding: 10px 5px;
+}
+
+/* Encabezado */
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-greeting h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: var(--texto-principal);
+  font-weight: 800;
+}
+
+.header-greeting p {
+  margin: 5px 0 0 0;
+  font-size: 0.95rem;
+  color: var(--texto-secundario);
+}
+
+.header-avatar {
+  font-size: 1.8rem;
+  background-color: #f0f2f5;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+/* Tarjeta de Balance PRO */
+.balance-card-pro {
+  background: linear-gradient(135deg, #0052cc 0%, #003380 100%);
+  border-radius: 20px;
+  padding: 25px;
+  color: white;
+  box-shadow: 0 12px 25px rgba(0, 82, 204, 0.3);
+}
+
+.balance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+
+.currency-badge {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.balance-amount {
+  margin: 15px 0;
+  font-size: 3rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.balance-amount span {
+  font-size: 1.2rem;
+  font-weight: normal;
+  opacity: 0.8;
+}
+
+/* Sección de Progreso dentro de la Tarjeta */
+.progress-section {
+  margin-top: 25px;
+  background: rgba(0, 0, 0, 0.15);
+  padding: 15px;
+  border-radius: 15px;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.progress-container-pro {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-bar-pro {
+  height: 100%;
+  background: #00d2ff; /* Azul celeste brillante para destacar */
+  border-radius: 10px;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.level-text-pro {
+  margin: 12px 0 0 0;
+  font-size: 0.85rem;
+  text-align: center;
+  opacity: 0.9;
+}
+
+/* Tarjetas de Acciones Rápidas (Botones) */
+.quick-actions-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.action-card {
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 15px 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid #f0f2f5;
+}
+
+.action-card:active {
+  transform: scale(0.97); /* Efecto de hundimiento nivel PRO */
+}
+
+.action-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-right: 15px;
+}
+
+.bg-orange { background: #fff0e6; }
+.bg-blue { background: #e6f0ff; }
+
+.action-content {
+  flex: 1;
+  text-align: left;
+}
+
+.action-content h3 {
+  margin: 0 0 4px 0;
+  font-size: 1.1rem;
+  color: var(--texto-principal);
+  font-weight: 700;
+}
+
+.action-content p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--texto-secundario);
+}
+
+.action-arrow {
+  color: #ccc;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
