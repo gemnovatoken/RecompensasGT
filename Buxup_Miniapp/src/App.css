@@ -1,0 +1,388 @@
+/* =========================================
+   VARIABLES DE COLOR (DISEÑO INSTITUCIONAL)
+   ========================================= */
+:root {
+  --fondo-app: #f4f7f6; /* Gris muy clarito y limpio */
+  --fondo-tarjeta: #ffffff; /* Blanco puro */
+  --texto-principal: #2c3e50; /* Azul oscuro casi negro para leer fácil */
+  --texto-secundario: #7f8c8d; /* Gris para textos de apoyo */
+  --color-primario: #0056b3; /* Azul institucional (Confianza) */
+  --color-secundario: #ff9800; /* Naranja cálido (Amigable) */
+  --color-exito: #28a745; /* Verde para puntos ganados */
+  --color-borde: #e0e6ed; /* Gris muy suave para separar cosas */
+}
+
+/* =========================================
+   ESTILOS GENERALES
+   ========================================= */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--fondo-app);
+  color: var(--texto-principal);
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.tab-content {
+  flex: 1;
+  padding: 20px;
+  padding-bottom: 90px; /* Espacio para que la barra de abajo no tape nada */
+}
+
+h2 {
+  color: var(--color-primario);
+  font-size: 1.5rem;
+  margin-top: 0;
+  text-align: center;
+  font-weight: 700;
+}
+
+h3 {
+  color: var(--texto-principal);
+  font-size: 1.2rem;
+  margin-top: 0;
+}
+
+p {
+  color: var(--texto-secundario);
+  line-height: 1.5;
+}
+
+/* =========================================
+   TARJETAS BLANCAS CON SOMBRA (ESTILO BANCO)
+   ========================================= */
+.balance-card, .earn-section, .campaign-form, .vault-rules {
+  background-color: var(--fondo-tarjeta);
+  border-radius: 16px; /* Bordes redondos amigables */
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* Sombra muy suave y elegante */
+  border: 1px solid var(--color-borde);
+  text-align: center;
+}
+
+/* El balance gigante del Centro de Recompensas GT */
+.balance-card h1 {
+  font-size: 3rem;
+  color: var(--color-exito);
+  margin: 10px 0;
+}
+
+.balance-card p {
+  margin: 0;
+  font-weight: 500;
+}
+
+/* =========================================
+   BARRA DE PROGRESO
+   ========================================= */
+.progress-container {
+  width: 100%;
+  background-color: var(--color-borde);
+  border-radius: 10px;
+  height: 14px;
+  margin: 15px 0;
+  overflow: hidden;
+}
+
+.progress-bar {
+  background-color: var(--color-primario);
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.5s ease;
+}
+
+.level-text {
+  font-size: 0.85rem;
+}
+
+/* =========================================
+   BOTONES AMIGABLES
+   ========================================= */
+.action-buttons, .offerwall-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+button {
+  flex: 1;
+  padding: 14px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.1s, opacity 0.2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+button:active {
+  transform: scale(0.96); /* Efecto de que se hunde al tocarlo */
+}
+
+.btn-primary {
+  background-color: var(--color-primario);
+  color: white;
+}
+
+.btn-secondary {
+  background-color: var(--color-secundario);
+  color: white;
+}
+
+.btn-close {
+  background-color: #e74c3c;
+  color: white;
+  width: 100%;
+  margin-top: 15px;
+}
+
+/* =========================================
+   BARRA DE NAVEGACIÓN INFERIOR (EL MENÚ)
+   ========================================= */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background-color: var(--fondo-tarjeta);
+  display: flex;
+  justify-content: space-around;
+  padding: 15px 0;
+  box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.08); /* Sombra hacia arriba */
+  border-top: 1px solid var(--color-borde);
+  z-index: 100;
+}
+
+.nav-item {
+  background: none;
+  color: var(--texto-secundario);
+  font-size: 0.9rem;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-weight: 500;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.nav-item.active {
+  color: var(--color-primario);
+  font-weight: 700;
+  background-color: rgba(0, 86, 179, 0.08); /* Azul muy transparente */
+}
+
+/* =========================================
+   FORMULARIO LOCAL Y CUADRÍCULA DE BÓVEDAS
+   ========================================= */
+.form-group label {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--texto-principal);
+  margin-bottom: 8px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background-color: #fafafa;
+  color: var(--texto-principal);
+  box-sizing: border-box;
+  margin-bottom: 15px;
+  font-size: 1rem;
+}
+
+.estimate-box {
+  background-color: rgba(40, 167, 69, 0.1);
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px dashed var(--color-exito);
+  margin-bottom: 20px;
+}
+
+.vaults-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.btn-vault {
+  background-color: white;
+  color: var(--texto-principal);
+  border: 2px solid var(--color-borde);
+  box-shadow: none;
+}
+
+.btn-vault:hover, .btn-vault:active {
+  border-color: var(--color-primario);
+  color: var(--color-primario);
+}
+
+
+
+
+/* --- ESTILOS INSTITUCIONALES PARA EL CHECK-IN --- */
+.checkin-card {
+  text-align: left;
+}
+
+.checkin-card h3 {
+  color: var(--color-primario);
+  border-bottom: 2px solid var(--color-borde);
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.institutional-reward-box {
+  display: flex;
+  align-items: center;
+  background-color: #f8f9fa;
+  border: 1px solid var(--color-borde);
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.reward-icon {
+  font-size: 2rem;
+  margin-right: 15px;
+}
+
+.reward-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.reward-text strong {
+  color: var(--texto-principal);
+  font-size: 1.1rem;
+}
+
+.reward-text span {
+  color: var(--color-exito);
+  font-weight: bold;
+  font-size: 0.95rem;
+}
+
+
+
+/* --- ESTILOS DEL TRACKER DE TAREAS EN EL MODAL --- */
+.modal-header {
+  text-align: center;
+  border-bottom: 1px solid var(--color-borde);
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+}
+
+.racha-title {
+  color: #ff3b30; /* Rojo fuego para la racha */
+  margin: 0 0 5px 0;
+}
+
+.task-tracker-container {
+  background-color: #f8f9fa;
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.task-tracker-container h4 {
+  color: var(--color-primario);
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.task-item {
+  margin-bottom: 15px;
+}
+
+.task-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--texto-principal);
+  margin-bottom: 5px;
+}
+
+.task-count {
+  color: var(--texto-secundario);
+}
+
+.task-progress-bg {
+  width: 100%;
+  height: 8px;
+  background-color: #e0e6ed;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.task-progress-fill {
+  height: 100%;
+  background-color: var(--color-exito);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-simulate {
+  background: none;
+  border: none;
+  color: var(--color-primario);
+  font-size: 0.8rem;
+  padding: 5px 0;
+  cursor: pointer;
+  text-decoration: underline;
+  box-shadow: none;
+  text-align: left;
+}
+
+.combo-status {
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: bold;
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 15px;
+  transition: all 0.3s ease;
+}
+
+.combo-status.pending {
+  background-color: rgba(255, 152, 0, 0.1);
+  color: var(--color-secundario);
+}
+
+.combo-status.success {
+  background-color: rgba(40, 167, 69, 0.1);
+  color: var(--color-exito);
+}
+
+/* Botones de Reclamo Dinámicos */
+.btn-claim {
+  width: 100%;
+  margin-bottom: 10px;
+  transition: all 0.3s ease;
+}
+
+.btn-claim-base {
+  background-color: var(--color-primario);
+  color: white;
+}
+
+.btn-claim-max {
+  background-color: var(--color-exito); /* Se vuelve verde al completar */
+  color: white;
+  transform: scale(1.02); /* Se hace un poquito más grande para destacar */
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+}
