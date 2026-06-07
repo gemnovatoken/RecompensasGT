@@ -7,15 +7,33 @@ interface GanarPuntosProps {
   telegramId: number | null;
 }
 
+// SOLUCIÓN PRO: Le decimos a TypeScript que 'Adsgram' existe en la ventana global del navegador
+// para que no nos lance el error de "Unexpected any" o "Property does not exist".
+// 1. Definimos qué hace el controlador del anuncio (mostrar el video)
+interface AdsgramController {
+  show: () => Promise<void>;
+}
+
+// 2. Definimos qué necesita la herramienta principal para inicializarse
+interface AdsgramAPI {
+  init: (params: { blockId: string }) => AdsgramController;
+}
+
+// 3. Lo inyectamos de forma estricta y segura en la ventana global (¡Adiós al 'any'!)
+declare global {
+  interface Window {
+    Adsgram?: AdsgramAPI;
+  }
+}
+
 export default function GanarPuntos({ balance, setBalance, telegramId }: GanarPuntosProps) {
   const [isWatchingAd, setIsWatchingAd] = useState(false);
   const [adsVistosHoy, setAdsVistosHoy] = useState(0);
 
-  // Variable maestra: ¡Puedes cambiar este 75 en cualquier momento!
   const LIMITE_DIARIO = 75; 
   const progresoAds = Math.min((adsVistosHoy / LIMITE_DIARIO) * 100, 100);
 
-  // Al cargar la pantalla, leemos cuántos anuncios ha visto hoy desde Supabase
+  // Consulta inicial a Supabase para saber cuántos videos ha visto HOY
   useEffect(() => {
     const contarAnunciosHoy = async () => {
       if (!telegramId) return;
@@ -23,7 +41,6 @@ export default function GanarPuntos({ balance, setBalance, telegramId }: GanarPu
       const { data: usuario } = await supabase.from('usuarios').select('id').eq('telegram_id', telegramId).single();
       
       if (usuario) {
-        // Buscamos en las transacciones de hoy que sean de tipo 'video_ad'
         const hoy = new Date().toISOString().split('T')[0];
         const { count } = await supabase
           .from('transacciones')
@@ -38,7 +55,7 @@ export default function GanarPuntos({ balance, setBalance, telegramId }: GanarPu
     contarAnunciosHoy();
   }, [telegramId]);
 
-  // --- LÓGICA DE CASCADA (WATERFALL) ---
+  // --- INTEGRACIÓN REAL DE ADSGRAM ---
   const handleWatchAd = async () => {
     if (!telegramId) return;
     if (adsVistosHoy >= LIMITE_DIARIO) {
@@ -49,30 +66,24 @@ export default function GanarPuntos({ balance, setBalance, telegramId }: GanarPu
     setIsWatchingAd(true);
 
     try {
-      let proveedor = '';
-      let recompensa = 0;
-
-      // 1. Intentamos con el Top Tier (Ej: Adsgram)
-      const adsgramDisponible = await verificarDisponibilidadAPI('Adsgram');
-      
-      if (adsgramDisponible) {
-        proveedor = 'Adsgram';
-        recompensa = 5; // Paga más
-        await mostrarVideoAPI(proveedor);
-      } 
-      // 2. Fallback: Si Adsgram falla, saltamos a Monetag sin que el usuario lo note
-      else {
-        const monetagDisponible = await verificarDisponibilidadAPI('Monetag');
-        if (monetagDisponible) {
-          proveedor = 'Monetag';
-          recompensa = 3; // Paga un poco menos
-          await mostrarVideoAPI(proveedor);
-        } else {
-          throw new Error('No hay inventario de anuncios en este momento.');
-        }
+      // 1. Verificamos que el script de index.html haya cargado correctamente
+      if (!window.Adsgram) {
+        throw new Error("El proveedor de anuncios no está disponible en este momento.");
       }
 
-      // 3. Registrar de forma segura en el Backend
+      // 2. Inicializamos el controlador (⚠️ AQUÍ DEBES PONER TU BLOCK ID REAL ⚠️)
+      // Ejemplo: "2834" o el número que te dé Adsgram en su panel.
+      const AdController = window.Adsgram.init({ blockId: "34362" }); 
+
+      console.log("[Waterfall] Solicitando anuncio real a Adsgram...");
+      
+      // 3. Ejecutamos el anuncio. Esto pausará el código hasta que el usuario termine de verlo.
+      await AdController.show();
+
+      // 4. SI LLEGAMOS AQUÍ: Significa que el anuncio se vio completo. ¡Guardamos en Supabase!
+      const proveedor = 'Adsgram';
+      const recompensa = 5;
+
       const { data: nuevoBalance, error } = await supabase.rpc('registrar_vista_anuncio', {
         p_telegram_id: telegramId,
         p_limite_diario: LIMITE_DIARIO,
@@ -80,7 +91,6 @@ export default function GanarPuntos({ balance, setBalance, telegramId }: GanarPu
         p_recompensa: recompensa
       });
 
-      // ... código anterior ...
       if (error) {
         alert(`❌ Error del servidor: ${error.message}`);
       } else {
@@ -89,100 +99,93 @@ export default function GanarPuntos({ balance, setBalance, telegramId }: GanarPu
         alert(`✅ ¡Ganaste ${recompensa} pts vía ${proveedor}!`);
       }
 
-    } catch (err: unknown) { // <-- SOLUCIÓN PRO: Usamos 'unknown' en vez de 'any'
-      if (err instanceof Error) {
-        // Ahora TypeScript sabe con 100% de seguridad que esto es un Error y tiene un .message
-        alert(`Lo sentimos: ${err.message}`);
-      } else {
-        alert('Ocurrió un error inesperado.');
-      }
+    } catch (err: unknown) {
+      // Si el usuario cierra el anuncio antes de tiempo, o si Adsgram dice "No hay inventario", cae aquí.
+      console.log("[Waterfall] Adsgram falló o se canceló:", err);
+      
+      // ⚠️ PRÓXIMO PASO: Aquí es exactamente donde inyectaremos a Monetag para salvar el anuncio.
+      alert("No hay anuncios disponibles en Adsgram en este momento o cancelaste el video. (¡Aquí entrará Monetag muy pronto!)");
+      
     } finally {
       setIsWatchingAd(false);
     }
   };
 
-  // --- FUNCIONES SIMULADORAS DE LAS REDES DE ANUNCIOS ---
-  const verificarDisponibilidadAPI = (red: string) => {
-    return new Promise((resolve) => {
-      // SOLUCIÓN PRO: Usamos la variable 'red' para registrar el proceso en la consola
-      console.log(`[Waterfall] Verificando inventario en: ${red}...`); 
-      
-      const tieneInventario = Math.random() > 0.3; 
-      setTimeout(() => resolve(tieneInventario), 400);
-    });
-  };
-
-  const mostrarVideoAPI = (red: string) => {
-    return new Promise((resolve) => {
-      // SOLUCIÓN PRO: Usamos la variable 'red' para saber qué anuncio estamos viendo
-      console.log(`[Waterfall] Reproduciendo anuncio desde: ${red}...`); 
-      
-      setTimeout(() => resolve(true), 2000); 
-    });
-  };
-
   return (
-    <div className="earn-container">
-      <h2>Zona de Ganancias</h2>
+    <div className="t2e-container" style={{ minHeight: '80vh', padding: '15px' }}>
+      
+      <div className="t2e-header" style={{ marginBottom: '20px' }}>
+        <h2 style={{ margin: 0, fontSize: '1.5rem' }}>📺 Zona de Ganancias</h2>
+      </div>
 
-      <div className="balance-card" style={{ marginBottom: '20px', padding: '15px' }}>
-        <p>Saldo Disponible</p>
-        <h2 style={{ color: 'var(--color-exito)', margin: '5px 0' }}>{balance.toLocaleString()} pts</h2>
+      <div className="t2e-balance-section" style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '16px', padding: '20px', marginBottom: '25px' }}>
+        <p style={{ margin: 0, color: '#8a8d9e', fontSize: '0.9rem' }}>Puntos Disponibles</p>
+        <h2 style={{ margin: '5px 0', fontSize: '2.5rem', color: '#00c6ff' }}>{balance.toLocaleString()}</h2>
       </div>
 
       {/* --- SECCIÓN 1: VIDEOS (CASCADA) --- */}
-      <div className="earn-section">
-        <h3>📺 Ver Videos Cortos</h3>
-        <p>Gana puntos rápidos viendo anuncios publicitarios.</p>
+      <div className="t2e-progress-wrapper" style={{ marginBottom: '20px' }}>
+        <h3 style={{ marginTop: 0, marginBottom: '5px', fontSize: '1.1rem' }}>Ver Videos Cortos</h3>
+        <p style={{ fontSize: '0.85rem', color: '#8a8d9e', marginBottom: '15px' }}>Gana puntos rápidos viendo anuncios publicitarios.</p>
         
         {/* Tracker del Límite Diario */}
-        <div className="limit-tracker" style={{ marginBottom: '15px', textAlign: 'left' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: 'var(--texto-secundario)', marginBottom: '5px' }}>
-            <span>Límite Diario:</span>
-            <strong>{adsVistosHoy} / {LIMITE_DIARIO}</strong>
-          </div>
-          <div className="progress-container" style={{ margin: 0, height: '8px' }}>
-            <div className="progress-bar" style={{ width: `${progresoAds}%`, backgroundColor: adsVistosHoy >= LIMITE_DIARIO ? '#ff3b30' : 'var(--color-primario)' }}></div>
-          </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '8px' }}>
+          <span>Límite Diario:</span>
+          <span style={{ fontWeight: 'bold', color: adsVistosHoy >= LIMITE_DIARIO ? '#ff5500' : 'white' }}>
+            {adsVistosHoy} / {LIMITE_DIARIO}
+          </span>
+        </div>
+        
+        <div className="t2e-progress-track" style={{ marginBottom: '20px' }}>
+          <div 
+            className="t2e-progress-fill" 
+            style={{ 
+              width: `${progresoAds}%`, 
+              background: adsVistosHoy >= LIMITE_DIARIO ? '#ff5500' : 'linear-gradient(90deg, #00c6ff, #0072ff)' 
+            }}
+          ></div>
         </div>
 
         <button 
-          className="btn-watch-ad" 
+          className="t2e-action-btn" 
           onClick={handleWatchAd}
           disabled={isWatchingAd || adsVistosHoy >= LIMITE_DIARIO}
           style={{ 
             width: '100%', 
-            backgroundColor: (isWatchingAd || adsVistosHoy >= LIMITE_DIARIO) ? 'var(--color-borde)' : '#ff3b30',
-            color: (isWatchingAd || adsVistosHoy >= LIMITE_DIARIO) ? 'var(--texto-secundario)' : 'white',
-            padding: '15px',
-            fontSize: '1.1rem'
+            justifyContent: 'center',
+            background: (isWatchingAd || adsVistosHoy >= LIMITE_DIARIO) ? 'rgba(255,255,255,0.05)' : 'linear-gradient(90deg, #ff9900, #ff5500)',
+            opacity: (isWatchingAd || adsVistosHoy >= LIMITE_DIARIO) ? 0.5 : 1
           }}
         >
-          {isWatchingAd ? '📺 Cargando anuncio...' : 
-           adsVistosHoy >= LIMITE_DIARIO ? '🚫 Límite alcanzado por hoy' : '▶ Ver Anuncio'}
+          <div className="t2e-btn-text" style={{ textAlign: 'center' }}>
+            <h3 style={{ fontSize: '1.2rem', margin: 0 }}>
+              {isWatchingAd ? '⏳ Cargando anuncio...' : 
+               adsVistosHoy >= LIMITE_DIARIO ? '🚫 Límite por hoy' : '▶ Ver Anuncio (+5 pts)'}
+            </h3>
+          </div>
         </button>
       </div>
 
       {/* --- SECCIÓN 2: MUROS DE OFERTAS GLOBALES --- */}
-      <div className="earn-section">
-        <h3>🚀 Tareas Premium</h3>
-        <p>Gana miles de puntos completando encuestas, jugando juegos y más.</p>
+      <div className="t2e-progress-wrapper">
+        <h3 style={{ marginTop: 0, marginBottom: '5px', fontSize: '1.1rem' }}>🚀 Tareas Premium</h3>
+        <p style={{ fontSize: '0.85rem', color: '#8a8d9e', marginBottom: '15px' }}>Miles de puntos por jugar y hacer encuestas.</p>
         
-        <div className="offerwall-buttons" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <button 
-            className="btn-offerwall" 
-            style={{ backgroundColor: '#5e5ce6', color: 'white' }}
-            onClick={() => alert('Abriendo el muro de TimeWall...')}
-          >
-            📋 Abrir TimeWall
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <button className="t2e-action-btn" style={{ background: 'rgba(94, 92, 230, 0.2)', border: '1px solid rgba(94, 92, 230, 0.5)' }}>
+            <div className="t2e-btn-icon" style={{ background: 'transparent' }}>📋</div>
+            <div className="t2e-btn-text">
+              <h3>Abrir TimeWall</h3>
+              <p>Microtareas de alto valor</p>
+            </div>
           </button>
           
-          <button 
-            className="btn-offerwall" 
-            style={{ backgroundColor: '#ff9f0a', color: 'white' }}
-            onClick={() => alert('Abriendo encuestas de CPX Research...')}
-          >
-            📊 Encuestas CPX Research
+          <button className="t2e-action-btn" style={{ background: 'rgba(255, 159, 10, 0.2)', border: '1px solid rgba(255, 159, 10, 0.5)' }}>
+            <div className="t2e-btn-icon" style={{ background: 'transparent' }}>📊</div>
+            <div className="t2e-btn-text">
+              <h3>CPX Research</h3>
+              <p>Encuestas pagadas</p>
+            </div>
           </button>
         </div>
       </div>
