@@ -64,7 +64,7 @@ export default function GanarPuntos({ balance, setBalance, telegramId }: GanarPu
         recompensa: 5,
         reproducir: async () => {
           if (!window.Adsgram) throw new Error("API de Adsgram no inyectada.");
-          const AdController = window.Adsgram.init({ blockId: "TU_BLOCK_ID_AQUI" }); 
+          const AdController = window.Adsgram.init({ blockId: "32495" }); 
           await AdController.show();
         }
       },
@@ -72,7 +72,7 @@ export default function GanarPuntos({ balance, setBalance, telegramId }: GanarPu
         nombre: 'Monetag',
         recompensa: 3,
         reproducir: async () => {
-          if (!window.showMonetagAd) throw new Error("API de Monetag no inyectada.");
+          if (!window.showMonetagAd) throw new Error("3362482");
           await window.showMonetagAd(); 
         }
       },
