@@ -8,24 +8,67 @@ import GanarPuntos from './components/GanarPuntos';
 import ZonaLocal from './components/ZonaLocal';
 import Perfil from './components/Perfil';
 
-function App() {
+interface TelegramWebAppUser {
+  id: number;
+  first_name?: string;
+  last_name?: string;
+  username?: string;
+}
+
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp: {
+        ready: () => void;
+        expand: () => void;
+        initDataUnsafe?: {
+          user?: TelegramWebAppUser;
+          start_param?: string;
+        };
+        initData?: string;
+      };
+    };
+  }
+}
+
+// ==========================================
+// 1. CREAMOS LA INTERFAZ PARA EL RADAR (Nivel PRO)
+// ==========================================
+interface RadarDiagnostico {
+  sdkCargado: boolean;
+  datosRecibidos: boolean;
+  usuarioDetectado: boolean;
+}
+
+export default function App() {
   const [activeTab, setActiveTab] = useState<'home' | 'earn' | 'local' | 'profile'>('home');
   const [balance, setBalance] = useState<number>(0); 
   const [telegramId, setTelegramId] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(true); 
+  
+  // ==========================================
+  // 2. REEMPLAZAMOS <any> POR NUESTRA NUEVA INTERFAZ
+  // ==========================================
+  const [debugInfo, setDebugInfo] = useState<RadarDiagnostico | null>(null);
 
   useEffect(() => {
     const inicializarUsuario = async () => {
       try {
-        // Le decimos a Telegram que la Mini App ya está lista para mostrarse
         WebApp.ready();
+        WebApp.expand(); // Nivel PRO: Hace que la app ocupe toda la pantalla de Telegram
 
-        // 1. Extraemos los datos seguros usando tu SDK oficial
         const tgUser = WebApp.initDataUnsafe?.user;
 
-        // 🛑 CANDADO ANTI-CLONES: Si no hay usuario de Telegram, detenemos todo.
+        // Guardamos el diagnóstico para mostrarlo si falla
+        setDebugInfo({
+          sdkCargado: !!WebApp,
+          datosRecibidos: !!WebApp.initData,
+          usuarioDetectado: !!tgUser
+        });
+
+        // 🛑 CANDADO: Si no hay usuario de Telegram, bloqueamos y mostramos el radar
         if (!tgUser) {
-          console.warn("Se intentó abrir fuera de Telegram o falló la carga.");
+          console.warn("Fallo de identidad: Telegram no envió los datos.");
           setLoading(false);
           return; 
         }
@@ -35,7 +78,6 @@ function App() {
         
         setTelegramId(tId);
 
-        // 2. Buscamos si el usuario ya existe
         const { data: usuarioExistente, error: fetchError } = await supabase
           .from('usuarios')
           .select('*')
@@ -43,22 +85,16 @@ function App() {
           .single(); 
 
         if (usuarioExistente) {
-          // Si ya existe, simplemente cargamos su balance
           setBalance(usuarioExistente.balance);
-        } 
-        // 3. LÓGICA DE USUARIO NUEVO Y REFERIDOS
-        else if (fetchError && fetchError.code === 'PGRST116') {
+        } else if (fetchError && fetchError.code === 'PGRST116') {
           console.log("Registrando nuevo usuario...");
           
           let padrinoUUID = null;
-
-          // Extraemos el parámetro de referido (ej: "ref_1234567")
           const startParam = WebApp.initDataUnsafe?.start_param;
 
           if (startParam && startParam.startsWith('ref_')) {
             const telegramIdPadrino = startParam.replace('ref_', '');
 
-            // Buscamos el ID interno (UUID) del padrino en Supabase
             const { data: padrino } = await supabase
               .from('usuarios')
               .select('id')
@@ -70,23 +106,20 @@ function App() {
             }
           }
 
-          // Insertamos al nuevo usuario (Tu hermana) y la vinculamos a su padrino (Tú)
           const { data: newUser, error: insertError } = await supabase
             .from('usuarios')
             .insert([{ 
               telegram_id: tId, 
               username: username, 
               balance: 0,
-              referidor_id: padrinoUUID // 🔗 ¡AQUÍ ESTÁ LA MAGIA DEL VÍNCULO!
+              referidor_id: padrinoUUID 
             }])
             .select()
             .single();
           
           if (insertError) throw insertError;
-          
           setBalance(newUser.balance);
         } else {
-          // Si hay otro tipo de error de base de datos, lo lanzamos
           throw fetchError;
         }
 
@@ -100,7 +133,6 @@ function App() {
     inicializarUsuario();
   }, []);
 
-  // Pantalla de carga
   if (loading) {
     return (
       <div className="app-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -109,17 +141,35 @@ function App() {
     );
   }
 
-  // 🛑 Bloqueo si lo abren fuera de Telegram (Mata al clon 123456789)
+  // ==========================================
+  // 🛡️ PANTALLA DE ACCESO DENEGADO (CON RADAR DIAGNÓSTICO)
+  // ==========================================
   if (!telegramId) {
     return (
-      <div className="app-container" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '20px', textAlign: 'center' }}>
-        <h2>⚠️ Acceso Denegado</h2>
-        <p>Debes abrir esta aplicación desde el Bot oficial dentro de Telegram.</p>
+      <div className="app-container" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '20px', textAlign: 'center', overflowY: 'auto' }}>
+        <h2 style={{ color: '#ff5500', marginBottom: '10px' }}>⚠️ Acceso Protegido</h2>
+        <p style={{ color: 'white', fontSize: '0.9rem' }}>El sistema bloqueó el acceso porque no pudo leer tu "Pasaporte de Telegram".</p>
+        
+        <div style={{ background: 'rgba(0,0,0,0.6)', border: '1px solid #ff5500', padding: '15px', borderRadius: '10px', textAlign: 'left', width: '100%', fontSize: '0.85rem', marginTop: '20px', color: '#ccc' }}>
+          <p style={{ color: '#fff', fontWeight: 'bold', margin: '0 0 10px 0' }}>🔍 DIAGNÓSTICO DEL SISTEMA:</p>
+          <p>1. SDK Detectado: {debugInfo?.sdkCargado ? '✅ Sí' : '❌ No (Falta script en index.html)'}</p>
+          <p>2. Datos Encriptados: {debugInfo?.datosRecibidos ? '✅ Sí' : '❌ Vacíos (No estás usando el link correcto)'}</p>
+          <p>3. Perfil Detectado: {debugInfo?.usuarioDetectado ? '✅ Sí' : '❌ No'}</p>
+        </div>
+
+        <div style={{ marginTop: '25px', color: '#8a8d9e', fontSize: '0.85rem', textAlign: 'left', background: 'rgba(255,255,255,0.05)', padding: '15px', borderRadius: '10px' }}>
+          <p style={{ margin: '0 0 10px 0', color: 'white' }}><strong>💡 CÓMO SOLUCIONARLO:</strong></p>
+          <ol style={{ margin: 0, paddingLeft: '15px', lineHeight: '1.6' }}>
+            <li>Asegúrate de NO abrir el link de Vercel directamente en el chat.</li>
+            <li>Abre la app tocando el botón oficial de "Menú" de tu Bot.</li>
+            <li>O bien, usa el enlace inteligente: <br/><strong style={{color: '#00c6ff'}}>https://t.me/RecompensasGT_bot/Jugar</strong></li>
+          </ol>
+        </div>
       </div>
     );
   }
 
-  // Renderizado Normal de la App
+  // --- RENDERIZADO NORMAL ---
   return (
     <div className="app-container">
       <div className="tab-content">
@@ -138,5 +188,3 @@ function App() {
     </div>
   );
 }
-
-export default App;
