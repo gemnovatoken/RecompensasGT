@@ -76,7 +76,7 @@ function App() {
         {activeTab === 'home' && <Inicio balance={balance} setBalance={setBalance} telegramId={telegramId} />}
         {activeTab === 'earn' && <GanarPuntos balance={balance} setBalance={setBalance} telegramId={telegramId} />}
         {activeTab === 'local' && <ZonaLocal />}
-        {activeTab === 'profile' && <Perfil balance={balance} setBalance={setBalance} />}
+        {activeTab === 'profile' && <Perfil balance={balance} setBalance={setBalance} telegramId={telegramId}/>}
       </div>
 
       <nav className="bottom-nav">
