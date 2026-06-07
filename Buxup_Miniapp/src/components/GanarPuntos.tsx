@@ -17,8 +17,7 @@ interface AdsgramAPI {
 declare global {
   interface Window {
     Adsgram?: AdsgramAPI;
-    showMonetagAd?: () => Promise<void>; 
-    showAdsterraAd?: () => Promise<void>;
+    // Ya no necesitamos las variables de Monetag/Adsterra aquí porque usamos Enlaces Directos
   }
 }
 
@@ -58,12 +57,16 @@ export default function GanarPuntos({ balance, setBalance, telegramId }: GanarPu
 
     setIsWatchingAd(true);
 
+    // ==========================================
+    // CASCADA DE ANUNCIOS: 3 NIVELES
+    // ==========================================
     const proveedoresDeAnuncios = [
       {
         nombre: 'Adsgram',
         recompensa: 5,
         reproducir: async () => {
           if (!window.Adsgram) throw new Error("API de Adsgram no inyectada.");
+          // Tu ID de Adsgram real (Cuando esté verificado en unas horas, funcionará solo)
           const AdController = window.Adsgram.init({ blockId: "32495" }); 
           await AdController.show();
         }
@@ -72,16 +75,21 @@ export default function GanarPuntos({ balance, setBalance, telegramId }: GanarPu
         nombre: 'Monetag',
         recompensa: 3,
         reproducir: async () => {
-          if (!window.showMonetagAd) throw new Error("3362482");
-          await window.showMonetagAd(); 
+          // Tu enlace directo real de Monetag
+          const monetagUrl = "https://me.monetag.com/direct_link?zoneid=3362482";
+          window.open(monetagUrl, '_blank');
+          // Esperamos 3 segundos simulando que carga el anuncio antes de dar los puntos (Seguridad TS: Promise<void>)
+          await new Promise<void>(resolve => setTimeout(resolve, 3000));
         }
       },
       {
         nombre: 'Adsterra',
         recompensa: 2,
         reproducir: async () => {
-          if (!window.showAdsterraAd) throw new Error("API de Adsterra no inyectada.");
-          await window.showAdsterraAd();
+          // Tu enlace inteligente (Smart Link) real de Adsterra
+          const adsterraUrl = "https://www.effectivecpmnetwork.com/ch9fys2z7h?key=ab88dc5ae9c0abf1e17ea4939b04dde0";
+          window.open(adsterraUrl, '_blank');
+          await new Promise<void>(resolve => setTimeout(resolve, 3000));
         }
       }
     ];
@@ -93,11 +101,11 @@ export default function GanarPuntos({ balance, setBalance, telegramId }: GanarPu
       try {
         console.log(`[Waterfall] Intentando conectar con ${proveedor.nombre}...`);
         await proveedor.reproducir();
+        
         proveedorExitoso = proveedor.nombre;
         recompensaFinal = proveedor.recompensa;
-        break; 
+        break; // Si tiene éxito, rompemos la cascada para no abrir más anuncios
         
-      // SOLUCIÓN PRO: Quitamos los paréntesis y la variable. Solo usamos 'catch {'
       } catch { 
         console.log(`[Waterfall] ${proveedor.nombre} falló. Saltando al siguiente...`);
       }
@@ -109,6 +117,7 @@ export default function GanarPuntos({ balance, setBalance, telegramId }: GanarPu
       return; 
     }
 
+    // Guardamos en Supabase
     try {
       const { data: nuevoBalance, error } = await supabase.rpc('registrar_vista_anuncio', {
         p_telegram_id: telegramId,
@@ -121,8 +130,9 @@ export default function GanarPuntos({ balance, setBalance, telegramId }: GanarPu
       setBalance(nuevoBalance);
       setAdsVistosHoy(prev => prev + 1);
       alert(`✅ ¡Ganaste ${recompensaFinal} pts vía ${proveedorExitoso}!`);
-    } catch (err: unknown) {
-      if (err instanceof Error) console.error("Error BD:", err.message);
+      
+    } catch (dbError: unknown) {
+      if (dbError instanceof Error) console.error("Error BD:", dbError.message);
       alert("Error al guardar puntos.");
     } finally {
       setIsWatchingAd(false);
